@@ -20,11 +20,9 @@
         libclang.lib
         rustc 
         cargo
-        # --- ДОБАВЛЕНО: Инструменты Cargo ---
         just
         cargo-nextest
         cargo-llvm-cov
-        # ------------------------------------
         cmake 
         ninja 
         gcc
@@ -36,14 +34,12 @@
       environment.variables = {
         LIBCLANG_PATH = "${pkgs.libclang.lib}/lib";
         CC = "clang";
-        # Путь к драйверам ibverbs, иначе ошибка (код 95, EOPNOTSUPP) 
         RDMAV_FORCED_CONFIG_FILE = "${pkgs.rdma-core}/etc/libibverbs.d";
         LD_LIBRARY_PATH = "${pkgs.rdma-core}/lib";
       };
 
-      # --- ДОБАВЛЕНО: Монтирование virtiofs ---
       fileSystems."/src" = {
-        device = "host_share"; # Метка (tag) из QEMU
+        device = "host_share";
         fsType = "virtiofs";
         options = [ "defaults" ];
       };
@@ -85,14 +81,14 @@
             networking.hostName = "node1";
             networking.interfaces.eth1.ipv4.addresses = [{ address = "10.0.0.1"; prefixLength = 24; }];
             virtualisation.vmVariant.virtualisation.qemu.options = [ 
-              # --- Настройки памяти для virtiofs ---
+              # --- Settings for virtiofs ---
               "-m 4096"
               "-object memory-backend-memfd,id=mem,size=4G,share=on"
               "-numa node,memdev=mem"
-              # --- Сокет для vhost-user-fs ---
+              # --- Socket vhost-user-fs ---
               "-chardev socket,id=char0,path=/tmp/vfs-node1.sock"
               "-device vhost-user-fs-pci,queue-size=1024,chardev=char0,tag=host_share"
-              # Сеть
+              # Network
               "-netdev socket,id=n1,listen=:1234 -device virtio-net-pci,netdev=n1,mac=52:54:00:12:34:01" 
             ];
           })
@@ -112,7 +108,6 @@
               "-numa node,memdev=mem"
               "-chardev socket,id=char0,path=/tmp/vfs-node2.sock"
               "-device vhost-user-fs-pci,queue-size=1024,chardev=char0,tag=host_share"
-              # Сеть
               "-netdev socket,id=n1,connect=127.0.0.1:1234 -device virtio-net-pci,netdev=n1,mac=52:54:00:12:34:02" 
             ];
           })

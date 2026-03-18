@@ -143,6 +143,21 @@ If you encounter errors while updating the config, you can take a look at my wor
 ## 2. Preparing the Guests hosts
 Flake is used to configure and run virtual machines. All configuration is located in the `flake.nix` file.
 
+The file contains configuration for each of the two nodes, which you can change.
+```Nix
+            virtualisation.vmVariant.virtualisation.qemu.options = [ 
+              # --- Settings for virtiofs ---
+              "-m 4096"
+              "-object memory-backend-memfd,id=mem,size=4G,share=on"
+              "-numa node,memdev=mem"
+              # --- Socket vhost-user-fs ---
+              "-chardev socket,id=char0,path=/tmp/vfs-node1.sock"
+              "-device vhost-user-fs-pci,queue-size=1024,chardev=char0,tag=host_share"
+              # Network
+              "-netdev socket,id=n1,listen=:1234 -device virtio-net-pci,netdev=n1,mac=52:54:00:12:34:01" 
+            ];
+```
+
 # Run
 ## Therminal 1
 For Node 1:
